@@ -38,7 +38,6 @@ public class HelloApplication extends Application {
         Label nameTrack= new Label();
         Slider timeTrack = new Slider();
         timeTrack.setMin(0);
-        timeTrack.setMax(300);
         timeTrack.setValue(0);
         Label timeTrackLabel = new Label("00:00/00:00");
         HBox buttonContrainer= new HBox();
@@ -48,6 +47,7 @@ public class HelloApplication extends Application {
         Button pause= new Button("Pause");
         Button stop= new Button("Stop");
         Button next= new Button("Next");
+        Button reFresh= new Button("Re-Fresh");
 
 
 
@@ -82,9 +82,9 @@ public class HelloApplication extends Application {
                 mediaPlayer.stop();
                 mediaPlayer.dispose();
             }
-
             int index= playList.getSelectionModel().getSelectedIndex();
             Media song= new Media(songs.get(index).toURI().toString());
+            currentTrack.setText(namesOfSongs.get(index));
             mediaPlayer = new MediaPlayer(song);
 
 
@@ -126,6 +126,7 @@ public class HelloApplication extends Application {
             }
         });
 
+
         prev.setOnAction(e -> {
             if(mediaPlayer != null) {
                 mediaPlayer.stop();
@@ -136,12 +137,19 @@ public class HelloApplication extends Application {
                     Media preSong= new Media(songs.get(preIndex).toURI().toString());
                     mediaPlayer = new MediaPlayer(preSong);
                     mediaPlayer.play();
+
+                    mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+                        timeTrack.setValue(newTime.toSeconds());
+                        timeTrackLabel.setText(formatTime(newTime, mediaPlayer.getTotalDuration()));
+                    });
+
                     playing = true;
                 }
             }else{
                 System.out.println("Nothing to play");
             }
         });
+
 
         next.setOnAction(e -> {
             if(mediaPlayer != null) {
@@ -153,6 +161,12 @@ public class HelloApplication extends Application {
                     Media nextSong= new Media(songs.get(nextIndex).toURI().toString());
                     mediaPlayer = new MediaPlayer(nextSong);
                     mediaPlayer.play();
+
+                    mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+                        timeTrack.setValue(newTime.toSeconds());
+                        timeTrackLabel.setText(formatTime(newTime, mediaPlayer.getTotalDuration()));
+                    });
+
                     playing = true;
                     mediaPlayer.setOnEndOfMedia(new Runnable() {
                         @Override
@@ -166,7 +180,11 @@ public class HelloApplication extends Application {
             }
         });
 
-        buttonContrainer.getChildren().addAll(openDir,play,pause,stop,next,prev);
+
+
+
+
+        buttonContrainer.getChildren().addAll(openDir,play,pause,stop,next,prev,reFresh);
         root.getChildren().addAll(openDir, playList,buttonContrainer,nameTrack,currentTrack,timeTrackLabel,timeTrack);
 
         Scene scene = new Scene(root, 600, 600);
